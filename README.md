@@ -4,7 +4,7 @@
 
 ## 기술 스택
 
-- **Backend**: Spring Boot 3, Java 21
+- **Backend**: Spring Boot 3, Java 21, Spring WebSocket, STOMP Protocol
 
 ## 단계별 아키텍처 및 구현
 
