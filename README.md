@@ -8,7 +8,7 @@
 
 ## 단계별 아키텍처 및 구현
 
-### Phase 0
+### [Phase 0](https://github.com/dh0304/shopping-live-chat/tree/feat/phase0)
 
 #### 기능 구현
 - [X] 단일 서버/메모리 기반 실시간 채팅
