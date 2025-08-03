@@ -57,3 +57,6 @@ backend/src/main/java/com/shoppinglive/api/
 - [X] STOMP을 통한 기본 브로드캐스트
 - [X] 메모리만 사용 (DB X)
 - [X] React로 방 입장/채팅 송수신
+
+## 기능 동작 시연
+[![채팅방 입장]([https://imgur.com/a/hr7UmPS](https://imgur.com/gallery/hr7UmPS#cYtXUtH))](https://imgur.com/gallery/hr7UmPS#cYtXUtH)
