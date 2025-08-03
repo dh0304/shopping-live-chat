@@ -59,4 +59,5 @@ backend/src/main/java/com/shoppinglive/api/
 - [X] React로 방 입장/채팅 송수신
 
 ## 기능 동작 시연
-[![채팅방 입장]([https://imgur.com/a/hr7UmPS](https://imgur.com/gallery/hr7UmPS#cYtXUtH))](https://imgur.com/gallery/hr7UmPS#cYtXUtH)
+<img src="https://i.imgur.com/zdvqqUz.png" width="50%" height="50%"/>
+<img src="https://i.imgur.com/En1hU6P.png" width="50%" height="50%"/>
