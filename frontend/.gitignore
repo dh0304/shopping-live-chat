@@ -33,12 +33,6 @@ yarn-debug.log*
 yarn-error.log*
 *.log
 
-# Runtime data
-pids
-*.pid
-*.seed
-*.pid.lock
-
 # Optional npm cache directory
 .npm
 

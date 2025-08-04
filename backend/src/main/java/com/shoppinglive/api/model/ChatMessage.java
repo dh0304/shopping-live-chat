@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ChatMessage {
 
-    private String roomId;
+    private String chatRoomId;
     private String userId;
     private String nickname;
     private String message;

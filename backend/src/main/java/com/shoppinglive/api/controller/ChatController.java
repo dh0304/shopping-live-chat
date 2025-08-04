@@ -3,7 +3,9 @@ package com.shoppinglive.api.controller;
 import com.shoppinglive.api.config.WebSocketConfig;
 import com.shoppinglive.api.model.ChatMessage;
 import com.shoppinglive.api.model.MessageType;
+import com.shoppinglive.api.service.ChatRoomQueryService;
 import com.shoppinglive.api.service.ChatRoomService;
+import com.shoppinglive.api.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
@@ -28,7 +30,9 @@ public class ChatController {
     
     private final SimpMessagingTemplate messagingTemplate;
     private final ChatRoomService chatRoomService;
-    
+    private final UserService userService;
+    private final ChatRoomQueryService chatRoomQueryService;
+
     /**
      * 채팅 메시지를 전송합니다.
      * 
@@ -64,10 +68,11 @@ public class ChatController {
             @Payload ChatMessage chatMessage, SimpMessageHeaderAccessor headerAccessor) {
         headerAccessor.getSessionAttributes().put("userId", userId);
         headerAccessor.getSessionAttributes().put("roomId", roomId);
+
+        userService.saveUserIfNotExists(userId, chatMessage.getNickname());
+        chatRoomService.enterChatRoom(roomId, userId, chatMessage.getNickname());
         
-        chatRoomService.addUserToRoom(roomId, userId, chatMessage.getNickname());
-        
-        ChatMessage joinMessage = chatRoomService.createSystemMessage(
+        ChatMessage joinMessage = chatRoomQueryService.createSystemMessage(
                 roomId,
             chatMessage.getNickname() + "님이 입장했습니다.",
             MessageType.JOIN
@@ -75,7 +80,7 @@ public class ChatController {
         
         messagingTemplate.convertAndSend(WebSocketConfig.Destinations.getRoomTopic(roomId), joinMessage);
         
-        int userCount = chatRoomService.getRoomUserCount(roomId);
+        int userCount = chatRoomQueryService.getRoomUserCount(roomId);
         messagingTemplate.convertAndSend(WebSocketConfig.Destinations.getRoomCountTopic(roomId), userCount);
     }
 }

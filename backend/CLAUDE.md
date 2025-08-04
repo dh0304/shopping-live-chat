@@ -2,6 +2,9 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Response Language
+response in Korean
+
 ## Project Overview
 
 This is a Spring Boot REST API project for a shopping live service. The project uses:

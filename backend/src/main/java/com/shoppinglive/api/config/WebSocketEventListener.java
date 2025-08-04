@@ -2,7 +2,10 @@ package com.shoppinglive.api.config;
 
 import com.shoppinglive.api.model.ChatMessage;
 import com.shoppinglive.api.model.MessageType;
+import com.shoppinglive.api.service.ChatRoomQueryService;
 import com.shoppinglive.api.service.ChatRoomService;
+import com.shoppinglive.api.service.UserQueryService;
+import com.shoppinglive.api.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -24,6 +27,8 @@ public class WebSocketEventListener {
 
     private final SimpMessagingTemplate messagingTemplate;
     private final ChatRoomService chatRoomService;
+    private final ChatRoomQueryService chatRoomQueryService;
+    private final UserQueryService userQueryService;
 
     /**
      * WebSocket 연결 해제 이벤트를 처리합니다.
@@ -42,10 +47,10 @@ public class WebSocketEventListener {
         String roomId = (String) headerAccessor.getSessionAttributes().get("roomId");
 
         if (userId != null && roomId != null) {
-            String nickname = chatRoomService.getUserNickname(userId);
-            chatRoomService.removeUserFromRoom(roomId, userId);
+            String nickname = userQueryService.getUserNickname(userId);
+            chatRoomService.leaveChatRoom(roomId, userId);
 
-            ChatMessage leaveMessage = chatRoomService.createSystemMessage(
+            ChatMessage leaveMessage = chatRoomQueryService.createSystemMessage(
                     roomId,
                     nickname + "님이 퇴장했습니다.",
                     MessageType.LEAVE
@@ -53,7 +58,7 @@ public class WebSocketEventListener {
 
             messagingTemplate.convertAndSend(WebSocketConfig.Destinations.getRoomTopic(roomId), leaveMessage);
 
-            int userCount = chatRoomService.getRoomUserCount(roomId);
+            int userCount = chatRoomQueryService.getRoomUserCount(roomId);
             messagingTemplate.convertAndSend(WebSocketConfig.Destinations.getRoomCountTopic(roomId), userCount);
         }
     }
