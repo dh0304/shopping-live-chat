@@ -36,4 +36,14 @@ public class ChatRoom {
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
+
+    public void incrementUserCount() {
+        this.userCount++;
+    }
+
+    public void decrementUserCount() {
+        if(this.userCount > 0) {
+            this.userCount--;
+        }
+    }
 }
