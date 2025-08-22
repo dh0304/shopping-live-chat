@@ -28,6 +28,11 @@ public class ChatRoom {
     @Column(name = "user_count", nullable = false)
     @Builder.Default
     private Integer userCount = 0;
+
+    // 동시성 테스트, 낙관적 락을 위한 필드, 사용안하면 주석처리할 것
+//    @Version
+//    @Column(name = "version")
+//    private Long version;
     
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
