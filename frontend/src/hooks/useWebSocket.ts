@@ -5,8 +5,8 @@ import { ChatMessage } from '../types/ChatTypes';
 import { WS_CONFIG } from '../constants/webSocketPaths';
 
 interface UseWebSocketProps {
-  roomId: string;
-  userId: string;
+  roomId: number;
+  userId: number;
   nickname: string;
 }
 

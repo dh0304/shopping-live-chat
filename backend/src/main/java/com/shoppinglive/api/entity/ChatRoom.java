@@ -11,7 +11,6 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "chat_rooms")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -19,21 +18,16 @@ import java.time.LocalDateTime;
 public class ChatRoom {
     
     @Id
-    @Column(name = "chat_room_id")
-    private String chatRoomId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
     
-    @Column(name = "room_name")
     private String roomName;
     
-    @Column(name = "user_count", nullable = false)
-    @Builder.Default
-    private Integer userCount = 0;
-    
     @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
     
     @UpdateTimestamp
-    @Column(name = "updated_at", nullable = false)
+    @Column(nullable = false)
     private LocalDateTime updatedAt;
 }

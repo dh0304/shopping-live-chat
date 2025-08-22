@@ -1,6 +1,6 @@
 export interface ChatMessage {
-  roomId: string;
-  userId: string;
+  roomId: number;
+  userId: number;
   nickname: string;
   message: string;
   type: 'CHAT' | 'JOIN' | 'LEAVE';
@@ -8,11 +8,11 @@ export interface ChatMessage {
 }
 
 export interface User {
-  userId: string;
+  userId: number;
   nickname: string;
 }
 
 export interface ChatRoom {
-  roomId: string;
+  roomId: number;
   userCount: number;
 }

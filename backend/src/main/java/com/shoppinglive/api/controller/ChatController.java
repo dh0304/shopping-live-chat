@@ -1,11 +1,10 @@
 package com.shoppinglive.api.controller;
 
 import com.shoppinglive.api.config.WebSocketConfig;
-import com.shoppinglive.api.model.ChatMessage;
+import com.shoppinglive.api.dto.ChatMessage;
 import com.shoppinglive.api.model.MessageType;
 import com.shoppinglive.api.service.ChatRoomQueryService;
 import com.shoppinglive.api.service.ChatRoomService;
-import com.shoppinglive.api.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
@@ -30,7 +29,6 @@ public class ChatController {
     
     private final SimpMessagingTemplate messagingTemplate;
     private final ChatRoomService chatRoomService;
-    private final UserService userService;
     private final ChatRoomQueryService chatRoomQueryService;
 
     /**
@@ -43,7 +41,7 @@ public class ChatController {
      * @param chatMessage 전송할 채팅 메시지 객체
      */
     @MessageMapping("/chat/rooms/{roomId}/messages")
-    public void sendMessage(@DestinationVariable String roomId, @Payload ChatMessage chatMessage) {
+    public void sendMessage(@DestinationVariable Long roomId, @Payload ChatMessage chatMessage) {
         chatMessage.setTimestamp(System.currentTimeMillis());
         log.info("Broadcasting message: {} from user: {} in room: {}", 
                 chatMessage.getMessage(), chatMessage.getNickname(), roomId);
@@ -64,23 +62,28 @@ public class ChatController {
      * @param headerAccessor WebSocket 세션 헤더에 접근하기 위한 객체
      */
     @MessageMapping("/chat/rooms/{roomId}/users/{userId}")
-    public void addUser(@DestinationVariable String roomId, @DestinationVariable String userId,
+    public void addUser(@DestinationVariable Long roomId, @DestinationVariable Long userId,
             @Payload ChatMessage chatMessage, SimpMessageHeaderAccessor headerAccessor) {
         headerAccessor.getSessionAttributes().put("userId", userId);
         headerAccessor.getSessionAttributes().put("roomId", roomId);
 
-        userService.saveUserIfNotExists(userId, chatMessage.getNickname());
-        chatRoomService.enterChatRoom(roomId, userId, chatMessage.getNickname());
+        chatRoomService.enterChatRoom(roomId, userId);
         
-        ChatMessage joinMessage = chatRoomQueryService.createSystemMessage(
-                roomId,
-            chatMessage.getNickname() + "님이 입장했습니다.",
-            MessageType.JOIN
-        );
-        
+        final ChatMessage joinMessage = createJoinSystemMessage(roomId, chatMessage.getNickname());
         messagingTemplate.convertAndSend(WebSocketConfig.Destinations.getRoomTopic(roomId), joinMessage);
-        
-        int userCount = chatRoomQueryService.getRoomUserCount(roomId);
+
+        final int userCount = chatRoomQueryService.getRoomUserCount(roomId);
         messagingTemplate.convertAndSend(WebSocketConfig.Destinations.getRoomCountTopic(roomId), userCount);
+    }
+
+    private ChatMessage createJoinSystemMessage(Long chatRoomId, String userNickname) {
+        return new ChatMessage(
+                "SYSTEM",
+                chatRoomId,
+                userNickname,
+                userNickname + "님이 입장했습니다.",
+                MessageType.JOIN,
+                System.currentTimeMillis()
+        );
     }
 }

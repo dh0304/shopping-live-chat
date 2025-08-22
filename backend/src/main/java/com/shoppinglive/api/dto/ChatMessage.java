@@ -1,5 +1,6 @@
-package com.shoppinglive.api.model;
+package com.shoppinglive.api.dto;
 
+import com.shoppinglive.api.model.MessageType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,8 +16,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ChatMessage {
 
-    private String chatRoomId;
-    private String userId;
+    private String systemNickname;
+    private Long chatRoomId;
     private String nickname;
     private String message;
     private MessageType type;

@@ -4,8 +4,8 @@ import { ChatMessage } from '../types/ChatTypes';
 import './LiveChatRoom.css';
 
 interface LiveChatRoomProps {
-  roomId: string;
-  userId: string;
+  roomId: number;
+  userId: number;
   nickname: string;
 }
 

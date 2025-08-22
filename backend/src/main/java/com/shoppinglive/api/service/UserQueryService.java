@@ -21,7 +21,7 @@ public class UserQueryService {
      * @return 사용자 닉네임 (존재하지 않으면 null)
      */
     @Transactional(readOnly = true)
-    public String getUserNickname(String userId) {
+    public String getUserNickname(Long userId) {
         return userRepository.findById(userId)
                 .map(User::getNickname)
                 .orElse(null);

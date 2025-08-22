@@ -1,18 +1,22 @@
 import React, { useState } from 'react';
+import { parseId } from '../utils/typeConverters';
 import './JoinForm.css';
 
 interface JoinFormProps {
-  onJoin: (roomId: string, nickname: string) => void;
+  onJoin: (roomId: number, nickname: string) => void;
 }
 
 const JoinForm: React.FC<JoinFormProps> = ({ onJoin }) => {
-  const [roomId, setRoomId] = useState<string>('live-room-1');
+  const [roomId, setRoomId] = useState<string>('1');
   const [nickname, setNickname] = useState<string>('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (roomId.trim() && nickname.trim()) {
-      onJoin(roomId.trim(), nickname.trim());
+      const numericRoomId = parseId(roomId.trim());
+      if (numericRoomId !== null) {
+        onJoin(numericRoomId, nickname.trim());
+      }
     }
   };
 
@@ -55,7 +59,7 @@ const JoinForm: React.FC<JoinFormProps> = ({ onJoin }) => {
           <button
             type="submit"
             className="join-button"
-            disabled={!roomId.trim() || !nickname.trim()}
+            disabled={!roomId.trim() || !nickname.trim() || parseId(roomId.trim()) === null}
           >
             채팅방 입장하기
           </button>

@@ -16,13 +16,13 @@ export const WS_CONFIG = {
   },
   
   TOPICS: {
-    ROOM: (roomId: string) => `/topic/room/${roomId}`,
-    ROOM_COUNT: (roomId: string) => `/topic/room/${roomId}/count`,
+    ROOM: (roomId: number) => `/topic/room/${roomId}`,
+    ROOM_COUNT: (roomId: number) => `/topic/room/${roomId}/count`,
   },
   
   DESTINATIONS: {
-    JOIN: (roomId: string, userId: string) => `/app/chat/rooms/${roomId}/users/${userId}`,
-    MESSAGE: (roomId: string) => `/app/chat/rooms/${roomId}/messages`,
+    JOIN: (roomId: number, userId: number) => `/app/chat/rooms/${roomId}/users/${userId}`,
+    MESSAGE: (roomId: number) => `/app/chat/rooms/${roomId}/messages`,
   },
   
   UTILS: {

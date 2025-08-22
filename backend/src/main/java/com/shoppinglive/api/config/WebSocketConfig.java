@@ -62,12 +62,12 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         public static final String ROOM_TOPIC = "/topic/room/{roomId}";
         public static final String ROOM_COUNT_TOPIC = "/topic/room/{roomId}/count";
         
-        public static String getRoomTopic(String roomId) {
-            return ROOM_TOPIC.replace("{roomId}", roomId);
+        public static String getRoomTopic(Long roomId) {
+            return ROOM_TOPIC.replace("{roomId}", String.valueOf(roomId));
         }
         
-        public static String getRoomCountTopic(String roomId) {
-            return ROOM_COUNT_TOPIC.replace("{roomId}", roomId);
+        public static String getRoomCountTopic(Long roomId) {
+            return ROOM_COUNT_TOPIC.replace("{roomId}", String.valueOf(roomId));
         }
     }
 }

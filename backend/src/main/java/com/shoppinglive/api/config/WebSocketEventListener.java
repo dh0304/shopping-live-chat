@@ -1,11 +1,10 @@
 package com.shoppinglive.api.config;
 
-import com.shoppinglive.api.model.ChatMessage;
+import com.shoppinglive.api.dto.ChatMessage;
 import com.shoppinglive.api.model.MessageType;
 import com.shoppinglive.api.service.ChatRoomQueryService;
 import com.shoppinglive.api.service.ChatRoomService;
 import com.shoppinglive.api.service.UserQueryService;
-import com.shoppinglive.api.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -43,23 +42,32 @@ public class WebSocketEventListener {
     public void handleWebSocketDisconnectListener(SessionDisconnectEvent event) {
         StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
 
-        String userId = (String) headerAccessor.getSessionAttributes().get("userId");
-        String roomId = (String) headerAccessor.getSessionAttributes().get("roomId");
+        Long userId = (Long) headerAccessor.getSessionAttributes().get("userId");
+        Long roomId = (Long) headerAccessor.getSessionAttributes().get("roomId");
 
         if (userId != null && roomId != null) {
             String nickname = userQueryService.getUserNickname(userId);
             chatRoomService.leaveChatRoom(roomId, userId);
 
-            ChatMessage leaveMessage = chatRoomQueryService.createSystemMessage(
-                    roomId,
-                    nickname + "님이 퇴장했습니다.",
-                    MessageType.LEAVE
+            messagingTemplate.convertAndSend(
+                    WebSocketConfig.Destinations.getRoomTopic(roomId),
+                    createLeaveSystemMessage(roomId, nickname)
             );
-
-            messagingTemplate.convertAndSend(WebSocketConfig.Destinations.getRoomTopic(roomId), leaveMessage);
-
-            int userCount = chatRoomQueryService.getRoomUserCount(roomId);
-            messagingTemplate.convertAndSend(WebSocketConfig.Destinations.getRoomCountTopic(roomId), userCount);
+            messagingTemplate.convertAndSend(
+                    WebSocketConfig.Destinations.getRoomCountTopic(roomId),
+                    chatRoomQueryService.getRoomUserCount(roomId)
+            );
         }
+    }
+
+    private ChatMessage createLeaveSystemMessage(Long chatRoomId, String userNickname) {
+        return new ChatMessage(
+                "SYSTEM",
+                chatRoomId,
+                userNickname,
+                userNickname + "님이 퇴장했습니다.",
+                MessageType.LEAVE,
+                System.currentTimeMillis()
+        );
     }
 }

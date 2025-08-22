@@ -11,7 +11,6 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "users")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -19,17 +18,17 @@ import java.time.LocalDateTime;
 public class User {
     
     @Id
-    @Column(name = "user_id")
-    private String userId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
     
-    @Column(name = "nickname", nullable = false)
+    @Column(nullable = false)
     private String nickname;
     
     @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
     
     @UpdateTimestamp
-    @Column(name = "updated_at", nullable = false)
+    @Column(nullable = false)
     private LocalDateTime updatedAt;
 }
