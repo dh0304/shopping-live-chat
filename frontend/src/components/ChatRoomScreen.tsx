@@ -143,7 +143,6 @@ const ChatRoomScreen: React.FC = () => {
       <div 
         ref={chatContainerRef}
         className="chat-messages"
-        onClick={handleHeartClick}
       >
         <div className="messages-container">
           {messages.map((message) => (
