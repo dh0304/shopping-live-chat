@@ -16,3 +16,10 @@ export interface ChatRoom {
   roomId: number;
   userCount: number;
 }
+
+export interface ChatRoomListResponse {
+  id: number;
+  roomName: string;
+  description: string;
+  userCount: number;
+}

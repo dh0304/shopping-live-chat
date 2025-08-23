@@ -22,6 +22,7 @@ public class ChatRoom {
     private Long id;
     
     private String roomName;
+    private String description;
     
     @CreationTimestamp
     @Column(nullable = false, updatable = false)

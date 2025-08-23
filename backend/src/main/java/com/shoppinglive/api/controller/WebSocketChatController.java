@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @Slf4j
-public class ChatController {
+public class WebSocketChatController {
     
     private final SimpMessagingTemplate messagingTemplate;
     private final ChatRoomService chatRoomService;

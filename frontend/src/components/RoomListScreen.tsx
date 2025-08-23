@@ -1,53 +1,44 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAppContext } from '../contexts/AppContext';
 import { ChatRoom } from '../types';
+import { ChatRoomListResponse } from '../types/ChatTypes';
 import { authApi } from '../api/authApi';
+import { chatRoomApi } from '../api/chatRoomApi';
 import './RoomListScreen.css';
 
 const RoomListScreen: React.FC = () => {
   const { state, dispatch } = useAppContext();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // 임시 채팅방 데이터 (실제로는 API에서 가져올 예정)
-  const mockChatRooms: ChatRoom[] = useMemo(() => [
-    {
-      id: 1,
-      name: '🎀 뷰티 라이브',
-      description: '최신 화장품과 뷰티 팁을 공유해요!',
-      activeUsers: 45,
-      isActive: true,
-    },
-    {
-      id: 2,
-      name: '👗 패션 쇼핑',
-      description: '트렌디한 패션 아이템을 소개합니다',
-      activeUsers: 23,
-      isActive: true,
-    },
-    {
-      id: 3,
-      name: '🏠 홈&리빙',
-      description: '집꾸미기 아이템과 생활용품',
-      activeUsers: 18,
-      isActive: true,
-    },
-    {
-      id: 4,
-      name: '📱 전자제품',
-      description: '최신 가젯과 전자제품 리뷰',
-      activeUsers: 7,
-      isActive: false,
-    },
-  ], []);
+  // 백엔드 데이터를 프론트엔드 형태로 변환하는 함수
+  const convertToFrontendChatRoom = (backendRoom: ChatRoomListResponse): ChatRoom => ({
+    id: backendRoom.id,
+    name: backendRoom.roomName,
+    description: backendRoom.description,
+    activeUsers: backendRoom.userCount,
+    isActive: true, // 기본값으로 활성 상태, 추후 실제 상태 API 추가 예정
+  });
 
   useEffect(() => {
-    setLoading(true);
-    // 실제로는 API 호출
-    setTimeout(() => {
-      dispatch({ type: 'SET_CHAT_ROOMS', payload: mockChatRooms });
-      setLoading(false);
-    }, 500);
-  }, [dispatch, mockChatRooms]);
+    const fetchChatRooms = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const backendRooms = await chatRoomApi.getChatRooms();
+        const frontendRooms = backendRooms.map(convertToFrontendChatRoom);
+        dispatch({ type: 'SET_CHAT_ROOMS', payload: frontendRooms });
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : '채팅방 목록을 불러오는데 실패했습니다.';
+        setError(errorMessage);
+        console.error('채팅방 목록 로드 실패:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchChatRooms();
+  }, [dispatch]);
 
   const handleRoomSelect = (room: ChatRoom) => {
     if (!room.isActive) return;
@@ -70,6 +61,38 @@ const RoomListScreen: React.FC = () => {
         <div className="loading-content">
           <div className="loading-spinner"></div>
           <p className="loading-text">채팅방 목록을 불러오는 중...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="room-list-screen">
+        <header className="room-list-header">
+          <div className="header-content">
+            <div className="header-info">
+              <h1>🛍️ 쇼핑 라이브</h1>
+              <p>
+                안녕하세요, {state.currentUser?.nickname}님!{' '}
+                {state.currentUser?.isGuest && '(비회원)'}
+              </p>
+            </div>
+            <button onClick={handleLogout} className="logout-btn">
+              로그아웃
+            </button>
+          </div>
+        </header>
+        <div className="error-container">
+          <div className="error-content">
+            <p className="error-text">{error}</p>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="retry-btn"
+            >
+              다시 시도
+            </button>
+          </div>
         </div>
       </div>
     );

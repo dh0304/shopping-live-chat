@@ -1,5 +1,6 @@
 package com.shoppinglive.api.service;
 
+import com.shoppinglive.api.dto.ChatRoomListResponse;
 import com.shoppinglive.api.entity.ChatRoom;
 import com.shoppinglive.api.entity.User;
 import com.shoppinglive.api.entity.UserChatRoom;

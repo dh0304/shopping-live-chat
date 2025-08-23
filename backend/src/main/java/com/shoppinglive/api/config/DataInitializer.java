@@ -11,6 +11,7 @@ import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -34,12 +35,27 @@ public class DataInitializer {
         
         userRepository.saveAll(users);
 
-        List<ChatRoom> chatRooms = IntStream.rangeClosed(1, 2)
-                .mapToObj(i -> ChatRoom.builder()
-                        .roomName("room" + i)
-                        .build())
-                .toList();
+        chatRoomRepository.saveAll(createChatRooms());
+    }
 
-        chatRoomRepository.saveAll(chatRooms);
+    private List<ChatRoom> createChatRooms() {
+        List<ChatRoom> chatRooms = new ArrayList<>();
+
+        chatRooms.add(ChatRoom.builder()
+                .roomName("올가을 스타일 완성! 패션 핫템 특집")
+                .description("계절마다 달라지는 트렌드, 이번 시즌 놓치면 안 될 필수 아이템을 준비했습니다. 라이브 중에만 가능한 한정 할인과 스타일링 팁도 함께 만나보세요.")
+                .build());
+
+        chatRooms.add(ChatRoom.builder()
+                .roomName("오늘의 밥상, 신선 특가 식품전")
+                .description("산지 직송 신선 식품부터 인기 간편식까지! 맛과 가격 모두 잡은 특별한 구성으로 준비했습니다. 방송 중 깜짝 증정 이벤트도 함께 즐겨보세요.")
+                .build());
+
+        chatRooms.add(ChatRoom.builder()
+                .roomName("생활이 편해지는 스마트 가전 모음")
+                .description("집안일을 더 쉽고 똑똑하게! 최신 가전제품을 라이브 단독 혜택으로 만나보세요. 실시간으로 제품 사용법과 꿀팁도 알려드립니다.")
+                .build());
+
+        return chatRooms;
     }
 }
