@@ -32,7 +32,7 @@ function appReducer(state: AppState, action: AppAction): AppState {
     case 'LOGIN_USER':
       return { ...state, currentUser: action.payload };
     case 'LOGOUT_USER':
-      return { ...state, currentUser: null, currentRoom: null };
+      return { ...initialState };
     case 'SET_CHAT_ROOMS':
       return { ...state, chatRooms: action.payload };
     case 'JOIN_ROOM':

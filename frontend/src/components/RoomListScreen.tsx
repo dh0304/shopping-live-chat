@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useAppContext } from '../contexts/AppContext';
 import { ChatRoom } from '../types';
+import { authApi } from '../api/authApi';
 import './RoomListScreen.css';
 
 const RoomListScreen: React.FC = () => {
@@ -53,8 +54,14 @@ const RoomListScreen: React.FC = () => {
     dispatch({ type: 'JOIN_ROOM', payload: room });
   };
 
-  const handleLogout = () => {
-    dispatch({ type: 'LOGOUT_USER' });
+  const handleLogout = async () => {
+    try {
+      await authApi.logout();
+      dispatch({ type: 'LOGOUT_USER' });
+    } catch (error) {
+      console.error('로그아웃 실패:', error);
+      dispatch({ type: 'LOGOUT_USER' });
+    }
   };
 
   if (loading) {

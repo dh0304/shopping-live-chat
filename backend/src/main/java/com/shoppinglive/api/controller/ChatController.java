@@ -12,7 +12,6 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -24,7 +23,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @Slf4j
-@CrossOrigin(origins = "*")
 public class ChatController {
     
     private final SimpMessagingTemplate messagingTemplate;
@@ -76,7 +74,7 @@ public class ChatController {
         messagingTemplate.convertAndSend(WebSocketConfig.Destinations.getRoomCountTopic(roomId), userCount);
     }
 
-    private ChatMessage createJoinSystemMessage(Long chatRoomId, String userNickname) {
+    private ChatMessage createJoinSystemMessage(final Long chatRoomId, final String userNickname) {
         return new ChatMessage(
                 "SYSTEM",
                 chatRoomId,

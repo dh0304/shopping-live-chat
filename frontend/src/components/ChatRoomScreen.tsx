@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAppContext } from '../contexts/AppContext';
 import { ChatMessage, HeartAnimation } from '../types';
+import { authApi } from '../api/authApi';
 import HeartAnimationComponent from './HeartAnimationComponent';
 import './ChatRoomScreen.css';
 
@@ -98,6 +99,16 @@ const ChatRoomScreen: React.FC = () => {
     dispatch({ type: 'LEAVE_ROOM' });
   };
 
+  const handleLogout = async () => {
+    try {
+      await authApi.logout();
+      dispatch({ type: 'LOGOUT_USER' });
+    } catch (error) {
+      console.error('Logout failed:', error);
+      dispatch({ type: 'LOGOUT_USER' });
+    }
+  };
+
   const formatTime = (timestamp: number) => {
     return new Date(timestamp).toLocaleTimeString('ko-KR', {
       hour: '2-digit',
@@ -122,6 +133,9 @@ const ChatRoomScreen: React.FC = () => {
           <div className="header-right">
             <span className="live-indicator"></span>
             <span className="live-text">LIVE</span>
+            <button onClick={handleLogout} className="logout-button">
+              로그아웃
+            </button>
           </div>
         </div>
       </header>

@@ -1,23 +1,37 @@
 import React, { useState } from 'react';
 import { useAppContext } from '../contexts/AppContext';
+import { authApi } from '../api/authApi';
 import './LoginScreen.css';
 
 const LoginScreen: React.FC = () => {
   const [nickname, setNickname] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const { dispatch } = useAppContext();
 
-  const handleMemberLogin = (e: React.FormEvent) => {
+  const handleMemberLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!nickname.trim()) return;
 
-    dispatch({
-      type: 'LOGIN_USER',
-      payload: {
-        id: Date.now(), // 임시 ID 생성
-        nickname: nickname.trim(),
-        isGuest: false,
-      },
-    });
+    setLoading(true);
+    setError('');
+
+    try {
+      const response = await authApi.login(nickname.trim());
+      
+      dispatch({
+        type: 'LOGIN_USER',
+        payload: {
+          id: response.userId,
+          nickname: response.nickname,
+          isGuest: false,
+        },
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '로그인 중 오류가 발생했습니다.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleGuestLogin = () => {
@@ -56,12 +70,18 @@ const LoginScreen: React.FC = () => {
 
           <button
             type="submit"
-            disabled={!nickname.trim()}
+            disabled={!nickname.trim() || loading}
             className="btn-primary"
           >
-            회원으로 입장하기
+            {loading ? '로그인 중...' : '회원으로 입장하기'}
           </button>
         </form>
+
+        {error && (
+          <div className="error-message" style={{ color: 'red', textAlign: 'center', margin: '10px 0' }}>
+            {error}
+          </div>
+        )}
 
         <div className="divider">
           <div className="divider-text">또는</div>

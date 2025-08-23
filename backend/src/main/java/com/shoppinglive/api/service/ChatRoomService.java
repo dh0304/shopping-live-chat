@@ -64,28 +64,6 @@ public class ChatRoomService {
                 .orElseThrow(() -> new EntityNotFoundException("ChatRoom not found with id: " + chatRoomId));
     }
 
-//    //TODO 동시성 문제
-//    @Transactional
-//    public Long makeChatRoomIfNotExists(final Long chatRoomId) {
-//        if(chatRoomId != null && !chatRoomRepository.existsById(chatRoomId)) {
-//            log.info("ChatRoom {} not found. Creating new ChatRoom.", chatRoomId);
-//
-//            chatRoomRepository.save(
-//                    ChatRoom.builder()
-//                    .roomName("Room " + chatRoomId)
-//                    .build()
-//            );
-//        } else if (chatRoomId == null) {
-//            ChatRoom newRoom = chatRoomRepository.save(
-//                    ChatRoom.builder()
-//                    .roomName("New Room")
-//                    .build()
-//            );
-//            return newRoom.getChatRoomId();
-//        }
-//        return chatRoomId;
-//    }
-
     /**
      * 사용자를 채팅방에서 제거합니다.
      * <p>

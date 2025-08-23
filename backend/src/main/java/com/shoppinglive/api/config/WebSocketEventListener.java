@@ -46,7 +46,7 @@ public class WebSocketEventListener {
         Long roomId = (Long) headerAccessor.getSessionAttributes().get("roomId");
 
         if (userId != null && roomId != null) {
-            String nickname = userQueryService.getUserNickname(userId);
+            String nickname = userQueryService.findByUserId(userId).getNickname();
             chatRoomService.leaveChatRoom(roomId, userId);
 
             messagingTemplate.convertAndSend(
