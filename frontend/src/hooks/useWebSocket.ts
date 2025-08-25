@@ -2,7 +2,9 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import { ChatMessage } from '../types';
+import { MessageResponse } from '../types/ChatTypes';
 import { WS_CONFIG } from '../constants/webSocketPaths';
+import { messageApi } from '../api/messageApi';
 
 interface UseWebSocketProps {
   roomId: number;
@@ -16,14 +18,35 @@ export const useWebSocket = ({ roomId, userId, nickname }: UseWebSocketProps) =>
   const [isConnected, setIsConnected] = useState<boolean>(false);
   const clientRef = useRef<Client | null>(null);
 
+  const loadRecentMessages = useCallback(async () => {
+    try {
+      const recentMessages = await messageApi.getRecentMessages(roomId);
+      const convertedMessages: ChatMessage[] = recentMessages.map((msg: MessageResponse) => ({
+        roomId,
+        userId: 0,
+        nickname: msg.nickname,
+        message: msg.content,
+        type: 'CHAT' as const,
+        timestamp: new Date(msg.createdAt).getTime(),
+        id: msg.id.toString()
+      }));
+      setMessages(convertedMessages);
+    } catch (error) {
+      console.error('Failed to load recent messages:', error);
+    }
+  }, [roomId]);
+
   const connect = useCallback(() => {
     const socket = new SockJS(WS_CONFIG.UTILS.getWebSocketUrl());
     const client = new Client({
       webSocketFactory: () => socket,
       debug: (str) => console.log(str),
-      onConnect: () => {
+      onConnect: async () => {
         console.log('Connected to WebSocket');
         setIsConnected(true);
+
+        // 최근 메시지 로드
+        await loadRecentMessages();
 
         // 채팅 메시지 구독
         client.subscribe(WS_CONFIG.TOPICS.ROOM(roomId), (message) => {
@@ -59,7 +82,7 @@ export const useWebSocket = ({ roomId, userId, nickname }: UseWebSocketProps) =>
 
     client.activate();
     clientRef.current = client;
-  }, [roomId, userId, nickname]);
+  }, [roomId, userId, nickname, loadRecentMessages]);
 
   const disconnect = useCallback(() => {
     if (clientRef.current) {

@@ -85,7 +85,7 @@ const LiveChatRoom: React.FC<LiveChatRoomProps> = ({ roomId, userId, nickname })
 
       <div className="messages-container">
         <div className="messages-list">
-          {messages.map(renderMessage)}
+          {messages.slice().reverse().map(renderMessage)}
           <div ref={messagesEndRef} />
         </div>
       </div>

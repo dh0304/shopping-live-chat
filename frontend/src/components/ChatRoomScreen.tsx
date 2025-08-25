@@ -110,7 +110,7 @@ const ChatRoomScreen: React.FC = () => {
         className="chat-messages"
       >
         <div className="messages-container">
-          {messages.map((message, index) => {
+          {messages.slice().reverse().map((message, index) => {
             const isSystemMessage = message.type !== 'CHAT';
             const isMyMessage = message.userId === state.currentUser!.id;
             

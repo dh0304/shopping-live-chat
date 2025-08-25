@@ -23,3 +23,10 @@ export interface ChatRoomListResponse {
   description: string;
   userCount: number;
 }
+
+export interface MessageResponse {
+  id: number;
+  nickname: string;
+  content: string;
+  createdAt: string;
+}
