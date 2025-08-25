@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
-import { ChatMessage } from '../types/ChatTypes';
+import { ChatMessage } from '../types';
 import { WS_CONFIG } from '../constants/webSocketPaths';
 
 interface UseWebSocketProps {
@@ -39,7 +39,7 @@ export const useWebSocket = ({ roomId, userId, nickname }: UseWebSocketProps) =>
 
         // 입장 메시지 전송
         client.publish({
-          destination: WS_CONFIG.DESTINATIONS.JOIN(roomId, userId),
+          destination: WS_CONFIG.DESTINATIONS.JOIN(roomId),
           body: JSON.stringify({
             roomId,
             userId,
@@ -71,7 +71,7 @@ export const useWebSocket = ({ roomId, userId, nickname }: UseWebSocketProps) =>
 
   const sendMessage = useCallback((messageText: string) => {
     if (clientRef.current && isConnected && messageText.trim()) {
-      const chatMessage: Omit<ChatMessage, 'timestamp'> = {
+      const chatMessage: Omit<ChatMessage, 'id' | 'timestamp'> = {
         roomId,
         userId,
         nickname,

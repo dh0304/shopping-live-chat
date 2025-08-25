@@ -1,75 +1,33 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { useAppContext } from '../contexts/AppContext';
-import { ChatMessage, HeartAnimation } from '../types';
+import { HeartAnimation } from '../types';
 import { authApi } from '../api/authApi';
+import { useWebSocket } from '../hooks/useWebSocket';
 import HeartAnimationComponent from './HeartAnimationComponent';
 import './ChatRoomScreen.css';
 
 const ChatRoomScreen: React.FC = () => {
   const { state, dispatch } = useAppContext();
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [hearts, setHearts] = useState<HeartAnimation[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
-  const scrollToBottom = () => {
+  const { messages, userCount, isConnected, sendMessage } = useWebSocket({
+    roomId: state.currentRoom!.id,
+    userId: state.currentUser!.id,
+    nickname: state.currentUser!.nickname
+  });
+
+  React.useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  useEffect(() => {
-    scrollToBottom();
   }, [messages]);
-
-  // 임시 메시지 데이터 (실제로는 WebSocket으로 받을 예정)
-  useEffect(() => {
-    const mockMessages: ChatMessage[] = [
-      {
-        id: '1',
-        roomId: state.currentRoom!.id,
-        userId: 101,
-        nickname: '쇼핑러버',
-        message: '안녕하세요! 오늘 라이브 너무 기대돼요 ❤️',
-        type: 'CHAT',
-        timestamp: Date.now() - 300000,
-      },
-      {
-        id: '2',
-        roomId: state.currentRoom!.id,
-        userId: 102,
-        nickname: '뷰티마니아',
-        message: '이 제품 색상이 정말 예뻐요!',
-        type: 'CHAT',
-        timestamp: Date.now() - 240000,
-      },
-      {
-        id: '3',
-        roomId: state.currentRoom!.id,
-        userId: 103,
-        nickname: '패션왕',
-        message: '가격 할인 언제까지인가요?',
-        type: 'CHAT',
-        timestamp: Date.now() - 180000,
-      },
-    ];
-    setMessages(mockMessages);
-  }, [state.currentRoom]);
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMessage.trim() || !state.currentUser || state.currentUser.isGuest) return;
 
-    const message: ChatMessage = {
-      id: Date.now().toString(),
-      roomId: state.currentRoom!.id,
-      userId: state.currentUser.id,
-      nickname: state.currentUser.nickname,
-      message: newMessage.trim(),
-      type: 'CHAT',
-      timestamp: Date.now(),
-    };
-
-    setMessages(prev => [...prev, message]);
+    sendMessage(newMessage.trim());
     setNewMessage('');
   };
 
@@ -131,6 +89,13 @@ const ChatRoomScreen: React.FC = () => {
           </div>
           
           <div className="header-right">
+            <div className="viewer-count">
+              👥 {userCount}명
+            </div>
+            <div className="connection-status">
+              <span className={`status-dot ${isConnected ? 'connected' : 'disconnected'}`}></span>
+              {isConnected ? '연결됨' : '연결 중...'}
+            </div>
             <span className="live-indicator"></span>
             <span className="live-text">LIVE</span>
             <button onClick={handleLogout} className="logout-button">
@@ -145,22 +110,33 @@ const ChatRoomScreen: React.FC = () => {
         className="chat-messages"
       >
         <div className="messages-container">
-          {messages.map((message) => (
-            <div key={message.id} className="message">
-              <div className="message-avatar">
-                {message.nickname.charAt(0)}
+          {messages.map((message, index) => {
+            const isSystemMessage = message.type !== 'CHAT';
+            const isMyMessage = message.userId === state.currentUser!.id;
+            
+            return (
+              <div key={`${message.timestamp}-${index}`} className={`message ${isSystemMessage ? 'system-message' : ''} ${isMyMessage ? 'my-message' : 'other-message'}`}>
+                {isSystemMessage ? (
+                  <div className="system-text">{message.message}</div>
+                ) : (
+                  <>
+                    <div className="message-avatar">
+                      {message.nickname.charAt(0)}
+                    </div>
+                    <div className="message-content">
+                      <div className="message-header">
+                        <span className="message-nickname">{message.nickname}</span>
+                        <span className="message-timestamp">{formatTime(message.timestamp)}</span>
+                      </div>
+                      <div className="message-bubble">
+                        <p className="message-text">{message.message}</p>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
-              <div className="message-content">
-                <div className="message-header">
-                  <span className="message-nickname">{message.nickname}</span>
-                  <span className="message-timestamp">{formatTime(message.timestamp)}</span>
-                </div>
-                <div className="message-bubble">
-                  <p className="message-text">{message.message}</p>
-                </div>
-              </div>
-            </div>
-          ))}
+            );
+          })}
           <div ref={messagesEndRef} />
         </div>
 
@@ -184,11 +160,12 @@ const ChatRoomScreen: React.FC = () => {
               onChange={(e) => setNewMessage(e.target.value)}
               placeholder="메시지를 입력하세요..."
               className="message-input"
+              disabled={!isConnected}
               maxLength={200}
             />
             <button
               type="submit"
-              disabled={!newMessage.trim()}
+              disabled={!isConnected || !newMessage.trim()}
               className="send-button"
             >
               전송

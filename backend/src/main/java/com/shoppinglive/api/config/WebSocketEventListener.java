@@ -4,6 +4,7 @@ import com.shoppinglive.api.dto.ChatMessage;
 import com.shoppinglive.api.model.MessageType;
 import com.shoppinglive.api.service.ChatRoomQueryService;
 import com.shoppinglive.api.service.ChatRoomService;
+import com.shoppinglive.api.service.ChatRoomSessionManager;
 import com.shoppinglive.api.service.UserQueryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +28,7 @@ public class WebSocketEventListener {
     private final SimpMessagingTemplate messagingTemplate;
     private final ChatRoomService chatRoomService;
     private final ChatRoomQueryService chatRoomQueryService;
+    private final ChatRoomSessionManager sessionManager;
     private final UserQueryService userQueryService;
 
     /**
@@ -39,25 +41,47 @@ public class WebSocketEventListener {
      */
     @EventListener
     //TODO 비동기처리가 필요할 수 있음 (예: @Async)
-    public void handleWebSocketDisconnectListener(SessionDisconnectEvent event) {
-        StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
+    public void handleWebSocketDisconnectListener(final SessionDisconnectEvent event) {
+        final StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
+        
+        final String sessionId = headerAccessor.getSessionId();
+        final Long roomId = (Long) headerAccessor.getSessionAttributes().get("roomId");
+        final String nickname = (String) headerAccessor.getSessionAttributes().get("nickname");
+        
+        if (!isValidDisconnection(roomId, sessionId)) {
+            return;
+        }
 
-        Long userId = (Long) headerAccessor.getSessionAttributes().get("userId");
-        Long roomId = (Long) headerAccessor.getSessionAttributes().get("roomId");
+        sessionManager.removeSession(roomId, sessionId);
+        processMemberDisconnection(headerAccessor, roomId, nickname);
+        broadcastUserCount(roomId);
+    }
 
-        if (userId != null && roomId != null) {
-            String nickname = userQueryService.findByUserId(userId).getNickname();
+    private boolean isValidDisconnection(final Long roomId, final String sessionId) {
+        return roomId != null && sessionId != null;
+    }
+
+
+    private void processMemberDisconnection(
+            final StompHeaderAccessor headerAccessor,
+            final Long roomId,
+            final String nickname
+    ) {
+        final Long userId = (Long) headerAccessor.getSessionAttributes().get("userId");
+        if (userId != null) {
             chatRoomService.leaveChatRoom(roomId, userId);
 
             messagingTemplate.convertAndSend(
                     WebSocketConfig.Destinations.getRoomTopic(roomId),
                     createLeaveSystemMessage(roomId, nickname)
             );
-            messagingTemplate.convertAndSend(
-                    WebSocketConfig.Destinations.getRoomCountTopic(roomId),
-                    chatRoomQueryService.getRoomUserCount(roomId)
-            );
+            log.info("회원 퇴장 - roomId: {}, userId: {}", roomId, userId);
         }
+    }
+
+    private void broadcastUserCount(final Long roomId) {
+        final int userCount = sessionManager.getCurrentUserCount(roomId);
+        messagingTemplate.convertAndSend(WebSocketConfig.Destinations.getRoomCountTopic(roomId), userCount);
     }
 
     private ChatMessage createLeaveSystemMessage(Long chatRoomId, String userNickname) {

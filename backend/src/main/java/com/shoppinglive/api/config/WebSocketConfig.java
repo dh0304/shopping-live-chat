@@ -5,6 +5,7 @@ import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
+import org.springframework.web.socket.server.support.HttpSessionHandshakeInterceptor;
 
 /**
  * WebSocket 설정 클래스
@@ -44,6 +45,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint(Destinations.WS_ENDPOINT)
                 .setAllowedOriginPatterns("*") //TODO 이후 Phase에서 Same Origin에서만 가능하도록 수정할 것
+                .addInterceptors(new HttpSessionHandshakeInterceptor())
                 .withSockJS();
     }
 

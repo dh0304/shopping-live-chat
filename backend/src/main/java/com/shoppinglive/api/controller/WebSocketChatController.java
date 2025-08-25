@@ -3,8 +3,8 @@ package com.shoppinglive.api.controller;
 import com.shoppinglive.api.config.WebSocketConfig;
 import com.shoppinglive.api.dto.ChatMessage;
 import com.shoppinglive.api.model.MessageType;
-import com.shoppinglive.api.service.ChatRoomQueryService;
 import com.shoppinglive.api.service.ChatRoomService;
+import com.shoppinglive.api.service.ChatRoomSessionManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
@@ -27,7 +27,7 @@ public class WebSocketChatController {
     
     private final SimpMessagingTemplate messagingTemplate;
     private final ChatRoomService chatRoomService;
-    private final ChatRoomQueryService chatRoomQueryService;
+    private final ChatRoomSessionManager sessionManager;
 
     /**
      * 채팅 메시지를 전송합니다.
@@ -39,11 +39,17 @@ public class WebSocketChatController {
      * @param chatMessage 전송할 채팅 메시지 객체
      */
     @MessageMapping("/chat/rooms/{roomId}/messages")
-    public void sendMessage(@DestinationVariable Long roomId, @Payload ChatMessage chatMessage) {
-        chatMessage.setTimestamp(System.currentTimeMillis());
-        log.info("Broadcasting message: {} from user: {} in room: {}", 
-                chatMessage.getMessage(), chatMessage.getNickname(), roomId);
+    public void sendMessage(@DestinationVariable Long roomId, @Payload ChatMessage chatMessage, 
+                           SimpMessageHeaderAccessor headerAccessor) {
+        log.info("sendMessage - roomdId: {}, userId: {}, message: {}", roomId, chatMessage.getNickname(), chatMessage.getMessage());
+        final Long sessionUserId = (Long) headerAccessor.getSessionAttributes().get("userId");
         
+        if (sessionUserId == null) {
+            log.warn("메시지 전송 실패 - 세션에 유저 정보가 없음");
+            return;
+        }
+        
+        chatMessage.setTimestamp(System.currentTimeMillis());
         messagingTemplate.convertAndSend(WebSocketConfig.Destinations.getRoomTopic(roomId), chatMessage);
     }
     
@@ -51,26 +57,44 @@ public class WebSocketChatController {
      * 사용자를 채팅방에 추가합니다.
      * 
      * 새로운 사용자가 채팅방에 입장할 때 호출됩니다.
-     * 세션에 사용자 정보를 저장하고, 채팅방에 사용자를 추가한 후
      * 입장 메시지와 현재 사용자 수를 브로드캐스트합니다.
      *
      * @param roomId 사용자가 입장할 방
-     * @param userId 사용자 식별 번호
      * @param chatMessage 사용자 정보가 포함된 메시지 객체
      * @param headerAccessor WebSocket 세션 헤더에 접근하기 위한 객체
      */
-    @MessageMapping("/chat/rooms/{roomId}/users/{userId}")
-    public void addUser(@DestinationVariable Long roomId, @DestinationVariable Long userId,
+    @MessageMapping("/chat/rooms/{roomId}/users")
+    public void addUser(@DestinationVariable Long roomId,
             @Payload ChatMessage chatMessage, SimpMessageHeaderAccessor headerAccessor) {
-        headerAccessor.getSessionAttributes().put("userId", userId);
+        final String sessionId = headerAccessor.getSessionId();
+        final Long sessionUserId = (Long) headerAccessor.getSessionAttributes().get("userId");
+
+        sessionManager.addSession(roomId, sessionId);
         headerAccessor.getSessionAttributes().put("roomId", roomId);
 
+        if (sessionUserId == null) {
+            handleGuestUser(roomId, chatMessage.getNickname());
+            return;
+        }
+
+        handleMemberUser(roomId, sessionUserId, chatMessage.getNickname());
+    }
+
+    private void handleGuestUser(final Long roomId, final String nickname) {
+        final int userCount = sessionManager.getCurrentUserCount(roomId);
+        messagingTemplate.convertAndSend(WebSocketConfig.Destinations.getRoomCountTopic(roomId), userCount);
+
+        log.info("비회원 입장 - roomId: {}, nickname: {}", roomId, nickname);
+    }
+    
+    private void handleMemberUser(final Long roomId, final Long userId, final String nickname) {
         chatRoomService.enterChatRoom(roomId, userId);
-        
-        final ChatMessage joinMessage = createJoinSystemMessage(roomId, chatMessage.getNickname());
+        log.info("회원 입장 - roomId: {}, userId: {}, nickname: {}", roomId, userId, nickname);
+
+        final ChatMessage joinMessage = createJoinSystemMessage(roomId, nickname);
         messagingTemplate.convertAndSend(WebSocketConfig.Destinations.getRoomTopic(roomId), joinMessage);
 
-        final int userCount = chatRoomQueryService.getRoomUserCount(roomId);
+        final int userCount = sessionManager.getCurrentUserCount(roomId);
         messagingTemplate.convertAndSend(WebSocketConfig.Destinations.getRoomCountTopic(roomId), userCount);
     }
 

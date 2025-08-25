@@ -21,7 +21,7 @@ export const WS_CONFIG = {
   },
   
   DESTINATIONS: {
-    JOIN: (roomId: number, userId: number) => `/app/chat/rooms/${roomId}/users/${userId}`,
+    JOIN: (roomId: number) => `/app/chat/rooms/${roomId}/users`,
     MESSAGE: (roomId: number) => `/app/chat/rooms/${roomId}/messages`,
   },
   
