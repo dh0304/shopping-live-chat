@@ -2,10 +2,8 @@ package com.shoppinglive.api.config;
 
 import com.shoppinglive.api.dto.ChatMessage;
 import com.shoppinglive.api.model.MessageType;
-import com.shoppinglive.api.service.ChatRoomQueryService;
 import com.shoppinglive.api.service.ChatRoomService;
 import com.shoppinglive.api.service.ChatRoomSessionManager;
-import com.shoppinglive.api.service.UserQueryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -27,9 +25,7 @@ public class WebSocketEventListener {
 
     private final SimpMessagingTemplate messagingTemplate;
     private final ChatRoomService chatRoomService;
-    private final ChatRoomQueryService chatRoomQueryService;
     private final ChatRoomSessionManager sessionManager;
-    private final UserQueryService userQueryService;
 
     /**
      * WebSocket 연결 해제 이벤트를 처리합니다.
