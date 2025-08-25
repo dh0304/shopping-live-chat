@@ -5,6 +5,7 @@ import com.shoppinglive.api.dto.ChatMessage;
 import com.shoppinglive.api.model.MessageType;
 import com.shoppinglive.api.service.ChatRoomService;
 import com.shoppinglive.api.service.ChatRoomSessionManager;
+import com.shoppinglive.api.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
@@ -28,6 +29,7 @@ public class WebSocketChatController {
     private final SimpMessagingTemplate messagingTemplate;
     private final ChatRoomService chatRoomService;
     private final ChatRoomSessionManager sessionManager;
+    private final MessageService messageService;
 
     /**
      * 채팅 메시지를 전송합니다.
@@ -48,6 +50,8 @@ public class WebSocketChatController {
             log.warn("메시지 전송 실패 - 세션에 유저 정보가 없음");
             return;
         }
+        
+        messageService.saveMessage(roomId, sessionUserId, chatMessage.getMessage());
         
         chatMessage.setTimestamp(System.currentTimeMillis());
         messagingTemplate.convertAndSend(WebSocketConfig.Destinations.getRoomTopic(roomId), chatMessage);

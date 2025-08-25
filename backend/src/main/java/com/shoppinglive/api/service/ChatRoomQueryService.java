@@ -6,6 +6,7 @@ import com.shoppinglive.api.repository.UserChatRoomRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -17,10 +18,12 @@ public class ChatRoomQueryService {
     private final UserChatRoomRepository userChatRoomRepository;
     private final ChatRoomRepository chatRoomRepository;
 
+    @Transactional(readOnly = true)
     public int getRoomUserCount(Long chatRoomId) {
         return userChatRoomRepository.countByChatRoom_Id(chatRoomId);
     }
 
+    @Transactional(readOnly = true)
     public List<ChatRoomListResponse> getAllChatRooms() {
         return chatRoomRepository.findAll().stream()
                 .map(chatRoom -> ChatRoomListResponse.builder()
