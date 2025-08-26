@@ -1,6 +1,5 @@
 package com.shoppinglive.api.service;
 
-import com.shoppinglive.api.dto.ChatRoomListResponse;
 import com.shoppinglive.api.entity.ChatRoom;
 import com.shoppinglive.api.entity.User;
 import com.shoppinglive.api.entity.UserChatRoom;
@@ -14,13 +13,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import org.springframework.transaction.support.TransactionTemplate;
 
-/**
- * 채팅방 관리 서비스
- * <p>
- * DB 기반으로 채팅방과 사용자 정보를 관리합니다.
- * 채팅 메시지는 메모리에서 관리하고, 사용자 및 채팅방 관계는 DB에서 관리합니다.
- */
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -29,6 +26,9 @@ public class ChatRoomService {
     private final ChatRoomRepository chatRoomRepository;
     private final UserChatRoomRepository userChatRoomRepository;
     private final UserRepository userRepository;
+    private final TransactionTemplate transactionTemplate;
+    
+    private final Map<String, Object> enterLocks = new ConcurrentHashMap<>();
 
     /**
      * 사용자를 채팅방에 추가합니다.
@@ -36,25 +36,31 @@ public class ChatRoomService {
      * @param chatRoomId 채팅방 ID
      * @param userId     사용자 ID
      */
-    //TODO 동시성 문제
-    @Transactional
     public void enterChatRoom(final Long chatRoomId, final Long userId) {
-        final ChatRoom chatRoom = findChatRoom(chatRoomId);
+        final String lockKey = userId + ":" + chatRoomId;
+        final Object lock = enterLocks.computeIfAbsent(lockKey, k -> new Object());
+        
+        synchronized (lock) {
+            transactionTemplate.execute(status -> {
+                final Optional<UserChatRoom> activeUserChatRoom = userChatRoomRepository
+                        .findByUser_IdAndChatRoom_IdAndExitTimeIsNull(userId, chatRoomId);
+                        
+                if (activeUserChatRoom.isPresent()) {
+                    log.info("이미 입장한 유저 - userId: {}, chatRoomId: {}", userId, chatRoomId);
+                    return null;
+                }
+                
+                userChatRoomRepository.save(
+                        UserChatRoom.builder()
+                                .user(findUser(userId))
+                                .chatRoom(findChatRoom(chatRoomId))
+                                .build()
+                );
 
-        if (!isUserInChatRoom(chatRoomId, userId)) {
-            userChatRoomRepository.save(
-                    UserChatRoom.builder()
-                            .user(findUser(userId))
-                            .chatRoom(chatRoom)
-                            .build()
-            );
-
-            log.info("유저 입장 - userId: {}, chatRoomId: {}", userId, chatRoomId);
+                log.info("유저 입장 - userId: {}, chatRoomId: {}", userId, chatRoomId);
+                return null;
+            });
         }
-    }
-
-    private boolean isUserInChatRoom(final Long chatRoomId, final Long userId) {
-        return userChatRoomRepository.findByUser_IdAndChatRoom_IdAndDeletedDateIsNull(userId, chatRoomId).isPresent();
     }
 
     private User findUser(final Long userId) {
@@ -76,10 +82,10 @@ public class ChatRoomService {
      */
     @Transactional
     public void leaveChatRoom(final Long chatRoomId, final Long userId) {
-        UserChatRoom userChatRoom = userChatRoomRepository.findByUser_IdAndChatRoom_IdAndDeletedDateIsNull(userId, chatRoomId)
+        final UserChatRoom userChatRoom = userChatRoomRepository.findByUser_IdAndChatRoom_IdAndExitTimeIsNull(userId, chatRoomId)
                 .orElseThrow(() -> new EntityNotFoundException("UserChatRoom not found with userId: " + userId + " and chatRoomId: " + chatRoomId));
 
-        userChatRoom.softDelete(LocalDateTime.now());
+        userChatRoom.exit(LocalDateTime.now());
 
         log.info("유저 퇴장 - userId: {}, chatRoomId: {}", userId, chatRoomId);
     }

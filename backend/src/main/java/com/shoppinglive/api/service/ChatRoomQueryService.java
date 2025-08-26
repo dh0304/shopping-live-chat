@@ -2,7 +2,6 @@ package com.shoppinglive.api.service;
 
 import com.shoppinglive.api.dto.ChatRoomListResponse;
 import com.shoppinglive.api.repository.ChatRoomRepository;
-import com.shoppinglive.api.repository.UserChatRoomRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -15,14 +14,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ChatRoomQueryService {
 
-    private final UserChatRoomRepository userChatRoomRepository;
     private final ChatRoomRepository chatRoomRepository;
     private final ChatRoomSessionManager chatRoomSessionManager;
-
-    @Transactional(readOnly = true)
-    public int getRoomUserCount(Long chatRoomId) {
-        return userChatRoomRepository.countByChatRoom_Id(chatRoomId);
-    }
 
     @Transactional(readOnly = true)
     public List<ChatRoomListResponse> getAllChatRooms() {
