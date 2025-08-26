@@ -34,8 +34,33 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'com.h2database:h2'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	testImplementation "org.junit.jupiter:junit-jupiter:5.8.1"
+	testImplementation "org.testcontainers:testcontainers:1.21.3"
+	testImplementation "org.testcontainers:junit-jupiter:1.21.3"
+	testImplementation 'org.testcontainers:mysql:1.21.3'
+
+	testImplementation("com.querydsl:querydsl-jpa:5.0.0:jakarta")
+	testImplementation("com.querydsl:querydsl-apt:5.0.0:jakarta")
+	testImplementation("jakarta.annotation:jakarta.annotation-api")
+	testImplementation("jakarta.persistence:jakarta.persistence-api")
 }
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+def querydslDir = "$buildDir/generated/sources/annotationProcessor/java/main"
+clean {
+	delete(file(querydslDir))
+}
+tasks.withType(JavaCompile) {
+	options.generatedSourceOutputDirectory = file(querydslDir)
+}
+sourceSets {
+	main {
+		java {
+			srcDirs += querydslDir
+		}
+	}
 }
