@@ -13,6 +13,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+
 /**
  * 채팅방 관리 서비스
  * <p>
@@ -52,7 +54,7 @@ public class ChatRoomService {
     }
 
     private boolean isUserInChatRoom(final Long chatRoomId, final Long userId) {
-        return userChatRoomRepository.findByUser_IdAndChatRoom_Id(userId, chatRoomId).isPresent();
+        return userChatRoomRepository.findByUser_IdAndChatRoom_IdAndDeletedDateIsNull(userId, chatRoomId).isPresent();
     }
 
     private User findUser(final Long userId) {
@@ -74,7 +76,10 @@ public class ChatRoomService {
      */
     @Transactional
     public void leaveChatRoom(final Long chatRoomId, final Long userId) {
-        userChatRoomRepository.deleteByUser_IdAndChatRoom_Id(userId, chatRoomId);
+        UserChatRoom userChatRoom = userChatRoomRepository.findByUser_IdAndChatRoom_IdAndDeletedDateIsNull(userId, chatRoomId)
+                .orElseThrow(() -> new EntityNotFoundException("UserChatRoom not found with userId: " + userId + " and chatRoomId: " + chatRoomId));
+
+        userChatRoom.softDelete(LocalDateTime.now());
 
         log.info("유저 퇴장 - userId: {}, chatRoomId: {}", userId, chatRoomId);
     }

@@ -17,6 +17,7 @@ public class ChatRoomQueryService {
 
     private final UserChatRoomRepository userChatRoomRepository;
     private final ChatRoomRepository chatRoomRepository;
+    private final ChatRoomSessionManager chatRoomSessionManager;
 
     @Transactional(readOnly = true)
     public int getRoomUserCount(Long chatRoomId) {
@@ -30,7 +31,7 @@ public class ChatRoomQueryService {
                         .id(chatRoom.getId())
                         .roomName(chatRoom.getRoomName())
                         .description(chatRoom.getDescription())
-                        .userCount(getRoomUserCount(chatRoom.getId()))
+                        .userCount(chatRoomSessionManager.getCurrentUserCount(chatRoom.getId()))
                         .build())
                 .toList();
     }
