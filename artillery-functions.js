@@ -1,13 +1,12 @@
 const http = require('http');
 const WebSocket = require('ws');
-
-// 글로벌 변수
-let userCounter = 1;
+const crypto = require('crypto');
 
 // 사용자 데이터 설정 (VU별 고유 정보)
 function setUserData(context, events, done) {
-  const userId = userCounter++;
-  context.vars.userId = userId;
+  // 해시 기반으로 1-10000 범위의 고유 사용자 생성
+  const hash = crypto.randomBytes(4).readUInt32BE(0);
+  const userId = (hash % 10000) + 1;
   context.vars.nickname = `user${userId}`;
   
   // 쿠키 저장을 위한 변수 초기화

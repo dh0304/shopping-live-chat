@@ -1,6 +1,11 @@
 config:
   target: 'http://backend:8080'
   phases:
+    # duration 60, arrivalRate 5, rampTo 10라면
+    # 시작: 초당 5명의 새 사용자 생성
+    # 60초 동안 점진적으로 증가
+    # 끝: 초당 10명의 새 사용자 생성
+
     # 기존 설정 (서버 다운 위험)
     # - duration: 30
     #   arrivalRate: 100
