@@ -1,0 +1,115 @@
+config:
+  target: 'http://backend:8080'
+  phases:
+    # 기존 설정 (서버 다운 위험)
+    # - duration: 30
+    #   arrivalRate: 100
+    #   rampTo: 100
+    #   name: "initial_entry"
+    # - duration: 120
+    #   arrivalRate: 100
+    #   rampTo: 67
+    #   name: "gradual_entry" 
+    # - duration: 60
+    #   arrivalRate: 67
+    #   rampTo: 33
+    #   name: "peak_users"
+    # - duration: 240
+    #   arrivalRate: 33
+    #   name: "stable_phase"
+    # - duration: 30
+    #   arrivalRate: 33
+    #   rampTo: 0
+    #   name: "ending"
+
+    # 보수적인 부하테스트 (1000명 목표)
+    # 1단계: 워밍업 (30초간 천천히 시작)
+    - duration: 30
+      arrivalRate: 1
+      rampTo: 5
+      name: "warmup"
+    # 2단계: 점진적 증가 (60초간)
+    - duration: 60
+      arrivalRate: 5
+      rampTo: 10
+      name: "gradual_increase"
+    # 3단계: 안정적 부하 유지 (90초간)
+    - duration: 90
+      arrivalRate: 10
+      name: "stable_load"
+    # 4단계: 최대 부하 테스트 (30초간 한계 테스트)
+    - duration: 30
+      arrivalRate: 10
+      rampTo: 15
+      name: "peak_test"
+    # 5단계: 종료 (30초간 점진적 감소)
+    - duration: 30
+      arrivalRate: 15
+      rampTo: 0
+      name: "cooldown"
+  processor: "./artillery-functions.js"
+  ws:
+    # WebSocket 연결 설정
+    subprotocols: []
+
+scenarios:
+  # 관찰자 (70%): 30초-2분 연결, 채팅 안함
+  - name: "observers"
+    weight: 70
+    flow:
+      - function: "setUserData"
+      - post:
+          url: "/api/auth/login"
+          json:
+            nickname: "{{ nickname }}"
+          afterResponse: "saveCookie"
+      - get:
+          url: "/api/chat-rooms"
+          capture:
+            - json: "$[0].id"
+              as: "roomId"
+      - function: "connectWebSocketAndChat"
+      # 30초-120초 랜덤 대기 (관찰만)
+      - think: "{{ randomBetween(30, 120) }}"
+      
+  # 참여자 (25%): 2-4분 연결, 중간에 채팅 참여
+  - name: "participants"  
+    weight: 25
+    flow:
+      - function: "setUserData"
+      - post:
+          url: "/api/auth/login"
+          json:
+            nickname: "{{ nickname }}"
+          afterResponse: "saveCookie"
+      - get:
+          url: "/api/chat-rooms"
+          capture:
+            - json: "$[0].id"
+              as: "roomId"
+      - function: "connectWebSocketWithParticipation"
+      # 2-3분 대기 (관찰)
+      - think: "{{ randomBetween(120, 180) }}"
+      # 30초-1분간 채팅은 함수 내에서 처리
+      - think: "{{ randomBetween(60, 120) }}"
+
+  # 구매자 (5%): 8분 연결, 4분30초에 채팅이벤트 참여
+  - name: "buyers"
+    weight: 5
+    flow:
+      - function: "setUserData"
+      - post:
+          url: "/api/auth/login"
+          json:
+            nickname: "{{ nickname }}"
+          afterResponse: "saveCookie"
+      - get:
+          url: "/api/chat-rooms"
+          capture:
+            - json: "$[0].id"
+              as: "roomId"
+      - function: "connectWebSocketWithBuying"
+      # 4분 30초 대기 (관찰)
+      - think: 270
+      # 구매 관련 채팅은 함수 내에서 처리
+      - think: 90

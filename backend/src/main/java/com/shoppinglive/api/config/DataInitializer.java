@@ -7,6 +7,7 @@ import com.shoppinglive.api.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.annotation.Profile;
 import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -18,21 +19,22 @@ import java.util.stream.IntStream;
 @Component
 @RequiredArgsConstructor
 @Slf4j
+@Profile("!docker") // docker 프로파일이 아닐 때만 실행
 public class DataInitializer {
-    
+
     private final UserRepository userRepository;
     private final ChatRoomRepository chatRoomRepository;
-    
+
     @EventListener(ApplicationReadyEvent.class)
     public void initializeData() {
-        log.info("애플리케이션 시작 - 초기 사용자 데이터 10개 생성");
-        
-        List<User> users = IntStream.rangeClosed(1, 10)
+        log.info("애플리케이션 시작 - 초기 사용자 데이터 10000개 생성");
+
+        List<User> users = IntStream.rangeClosed(1, 10000)
                 .mapToObj(i -> User.builder()
                         .nickname("user" + i)
                         .build())
                 .toList();
-        
+
         userRepository.saveAll(users);
 
         chatRoomRepository.saveAll(createChatRooms());
