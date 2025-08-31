@@ -17,9 +17,17 @@ docker container prune -f 2>/dev/null || true
 docker network prune -f 2>/dev/null || true
 
 # 볼륨 정리 (선택사항 - 데이터 초기화됨)
-docker volume prune -f 2>/dev/null || true
+#docker volume prune -f 2>/dev/null || true
+
+# Grafana 볼륨 제외하고 정리
+docker volume ls -q | grep -v "grafana_data" | xargs -r docker volume rm 2>/dev/null || true
 
 echo "✅ Docker 환경 정리 완료"
+
+echo "🔧 Spring Boot 애플리케이션 빌드 중..."
+cd backend
+./gradlew clean build -x test --no-build-cache --no-daemon
+cd ..
 
 echo "🚀 Docker Compose 시작 중..."
 echo "🔧 모든 이미지 강제 재빌드 중..."
@@ -68,4 +76,4 @@ done
 # Artillery 컨테이너 실행 (detached 모드로 실행하여 로그를 실시간으로 볼 수 있음)
 #docker-compose --profile test up --remove-orphans
 
-docker-compose --profile test up
+docker-compose --profile up
