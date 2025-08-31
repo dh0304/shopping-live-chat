@@ -1,4 +1,21 @@
 services:
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: shopping-live-node-exporter
+    ports:
+      - "9100:9100"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc' # 호스트의 프로세스 정보 접
+      - '--path.rootfs=/rootfs' # 호스트의 루트 파일시스템 접근
+      - '--path.sysfs=/host/sys' # 호스트의 시스템 정보 접
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)' # 불필요한 마운트 포인트 제외
+      - '--collector.systemd' # systemd 메트릭 수집
+      - '--collector.processes' # 프로세스 메트릭 수집
+
   prometheus:
     image: prom/prometheus:latest
     container_name: shopping-live-prometheus
@@ -12,6 +29,8 @@ services:
     command:
       - '--config.file=/etc/prometheus/prometheus-ec2.yml'
       - '--storage.tsdb.path=/prometheus'
+    depends_on:
+      - node-exporter
     restart: unless-stopped
 
   grafana:
