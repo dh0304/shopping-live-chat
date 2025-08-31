@@ -1128,9 +1128,9 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "tomcat_threads_current_threads{application=\"$app_name\"}",
+          "expr": "jvm_threads_live_threads{application=\"$app_name\"}",
           "interval": "",
-          "legendFormat": "Current Threads",
+          "legendFormat": "JVM Live Threads",
           "range": true,
           "refId": "A"
         },
@@ -1161,7 +1161,7 @@
           "refId": "C"
         }
       ],
-      "title": "Tomcat Thread Pool",
+      "title": "Thread Pool Monitoring",
       "type": "timeseries"
     },
     {
