@@ -19,7 +19,7 @@ import java.util.stream.IntStream;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-@Profile("!docker") // docker 프로파일이 아닐 때만 실행
+@Profile({"!docker", "!dev"}) // docker, dev 프로파일이 아닐 때만 실행
 public class DataInitializer {
 
     private final UserRepository userRepository;
