@@ -1,7 +1,5 @@
 #!/bin/bash
-
 # 부하테스트 실행 스크립트
-# Docker 네트워크 오류 방지를 위한 완전 정리 후 재시작
 
 set -e
 
@@ -9,15 +7,12 @@ echo "🧹 Docker 환경 완전 정리 중..."
 
 # 기존 컨테이너 강제 중지 및 제거
 docker-compose -f docker-compose.was-ec2.yml down --remove-orphans --volumes 2>/dev/null || true
-
 # 관련 컨테이너 강제 정리
 docker container prune -f 2>/dev/null || true
-
 # 네트워크 정리
 docker network prune -f 2>/dev/null || true
-
-# Grafana 볼륨 제외하고 정리
-docker volume ls -q | grep -v "grafana_data" | xargs -r docker volume rm 2>/dev/null || true
+# 볼륨 정리
+docker volume ls -q | xargs -r docker volume rm 2>/dev/null || true
 
 echo "✅ Docker 환경 정리 완료"
 
@@ -58,8 +53,3 @@ for i in {1..30}; do
     echo "DataInitializer 대기 중... ($i/30)"
     sleep 2
 done
-
-# Artillery 컨테이너 실행 (detached 모드로 실행하여 로그를 실시간으로 볼 수 있음)
-#docker-compose --profile test up --remove-orphans
-
-docker-compose -f docker-compose.was-ec2.yml --profile up
