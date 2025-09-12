@@ -8,7 +8,7 @@ set -e
 echo "🧹 Docker 환경 완전 정리 중..."
 
 # 기존 컨테이너 강제 중지 및 제거
-docker-compose down --remove-orphans --volumes 2>/dev/null || true
+docker-compose -f docker-compose.was-ec2.yml down --remove-orphans --volumes 2>/dev/null || true
 
 # 관련 컨테이너 강제 정리
 docker container prune -f 2>/dev/null || true
@@ -28,9 +28,9 @@ cd ..
 
 echo "🚀 Docker Compose 시작 중..."
 echo "🔧 모든 이미지 강제 재빌드 중..."
-docker-compose build --no-cache
+docker-compose -f docker-compose.was-ec2.yml build --no-cache
 echo "🐳 모든 서비스 시작 중..."
-docker-compose up -d
+docker-compose -f docker-compose.was-ec2.yml up -d
 
 echo "⏳ 서비스 준비 대기 중..."
 sleep 10
@@ -62,4 +62,4 @@ done
 # Artillery 컨테이너 실행 (detached 모드로 실행하여 로그를 실시간으로 볼 수 있음)
 #docker-compose --profile test up --remove-orphans
 
-docker-compose --profile up
+docker-compose -f docker-compose.was-ec2.yml --profile up
