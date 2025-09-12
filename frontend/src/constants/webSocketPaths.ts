@@ -4,7 +4,9 @@
  */
 
 export const WS_CONFIG = {
-  SERVER_URL: 'http://localhost:8080',
+  SERVER_URL: window.location.hostname === 'localhost'
+    ? 'http://localhost:8080'
+    : '',
   
   ENDPOINTS: {
     WS: '/ws',
