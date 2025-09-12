@@ -27,3 +27,5 @@ services:
       - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)' # 불필요한 마운트 포인트 제외
       - '--collector.systemd' # systemd 메트릭 수집
       - '--collector.processes' # 프로세스 메트릭 수집
+
+volumes:
