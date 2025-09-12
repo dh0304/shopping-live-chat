@@ -1,0 +1,58 @@
+spring:
+  application:
+    name: shopping-live-api
+  datasource:
+    url: jdbc:mysql://192.168.0.48:3306/shopping_live?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: root
+    password: 1234
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: false
+        show_sql: false
+        use_sql_comments: false
+  
+  websocket:
+    stomp:
+      broker:
+        relay:
+          enabled: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    enable:
+      hikaricp: true
+      http: true
+      jdbc: true
+      tomcat: true
+    tags:
+      application: ${spring.application.name}
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+
+server:
+  tomcat:
+    mbeanregistry:
+      enabled: true
+
+logging:
+  level:
+    com.shoppinglive.api: INFO
+    org.springframework.web.socket: WARN
+#    org.hibernate.SQL: OFF
+#    org.hibernate.type.descriptor.sql.BasicBinder: OFF
