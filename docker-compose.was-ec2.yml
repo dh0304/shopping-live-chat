@@ -14,8 +14,9 @@ services:
   node-exporter:
     image: prom/node-exporter:latest
     container_name: shopping-live-node-exporter
-    ports:
-      - "9100:9100"
+    privileged: true # 컨테이너 호스트 시스템 전체 권한부여
+    network_mode: host # 호스트 네트워크 직접 사용
+    pid: host # 호스트의 프로세스 정보에 직접 접근
     volumes:
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
@@ -27,5 +28,3 @@ services:
       - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)' # 불필요한 마운트 포인트 제외
       - '--collector.systemd' # systemd 메트릭 수집
       - '--collector.processes' # 프로세스 메트릭 수집
-
-volumes:
