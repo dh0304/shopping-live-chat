@@ -15,6 +15,9 @@ docker rm nginx 2>/dev/null || true
 docker build -f Dockerfile.nginx -t nginx .
 
 # nginx 컨테이너 실행
-docker run -d --name nginx --restart unless-stopped -p 80:80 nginx
+docker run -d --name nginx --restart unless-stopped -p 80:80 \
+-v /etc/letsencrypt/live/tecdev.shop/fullchain.pem:/etc/nginx/ssl/fullchain.pem \
+-v /etc/letsencrypt/live/tecdev.shop/privkey.pem:/etc/nginx/ssl/privkey.pem \
+nginx
 
 echo "nginx started on port 80"
