@@ -18,10 +18,10 @@ spring:
         show_sql: false
         use_sql_comments: false
   
-  sql:
-    init:
-      mode: always
-      data-locations: classpath:data.sql
+#  sql:
+#    init:
+#      mode: always
+#      data-locations: classpath:data.sql
   
   websocket:
     stomp:
