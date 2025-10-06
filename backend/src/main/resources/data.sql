@@ -1,3 +1,8 @@
+-- 기존 데이터 및 테이블 삭제
+SET FOREIGN_KEY_CHECKS = 0;
+DROP TABLE IF EXISTS user, chat_room, message, user_chat_room;
+SET FOREIGN_KEY_CHECKS = 1;
+
 -- 테이블 생성 (Spring Boot에서 자동 생성되지만 명시적으로 정의)
 CREATE TABLE IF NOT EXISTS user (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
