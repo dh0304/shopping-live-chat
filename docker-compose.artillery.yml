@@ -1,0 +1,6 @@
+services:
+  artillery:
+    build:
+      context: .
+      dockerfile: artillery.Dockerfile
+    container_name: artillery-load-test

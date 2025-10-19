@@ -2,6 +2,9 @@ const http = require('http');
 const WebSocket = require('ws');
 const crypto = require('crypto');
 
+// 백엔드 서버 주소 설정 (필요시 여기만 수정)
+const BACKEND_HOST = '192.168.0.46:8080';
+
 // 사용자 데이터 설정 (VU별 고유 정보)
 function setUserData(context, events, done) {
   // 해시 기반으로 1-10000 범위의 고유 사용자 생성
@@ -18,22 +21,22 @@ function setUserData(context, events, done) {
 
 
 // 랜덤 범위 함수 (템플릿에서 사용)
-function randomBetween(min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
+// function randomBetween(min, max) {
+//   return Math.floor(Math.random() * (max - min + 1)) + min;
+// }
 
 // 관찰자용 WebSocket 연결 (채팅 안함)
 function connectWebSocketAndChat(context, events, done) {
   const nickname = context.vars.nickname;
   const roomId = context.vars.roomId;
   const cookies = context.vars.cookies;
-  
+
   if (!roomId) {
     console.error(`❌ No roomId for ${nickname}`);
     return done();
   }
-  
-  const wsUrl = `ws://backend:8080/ws/websocket`;
+
+  const wsUrl = `ws://${BACKEND_HOST}/ws/websocket`;
   const wsOptions = {};
   
   // 쿠키가 있으면 헤더에 포함
@@ -47,7 +50,7 @@ function connectWebSocketAndChat(context, events, done) {
   context.vars.ws = ws;
   
   ws.on('open', () => {
-    console.log(`🔌 WebSocket connected for ${nickname}`);
+    // console.log(`🔌 WebSocket connected for ${nickname}`);
     
     // STOMP CONNECT
     const connectFrame = `CONNECT\naccept-version:1.1,1.0\nheart-beat:10000,10000\n\n\0`;
@@ -58,7 +61,7 @@ function connectWebSocketAndChat(context, events, done) {
     const message = data.toString();
     
     if (message.startsWith('CONNECTED')) {
-      console.log(`✅ STOMP CONNECTED for ${nickname}`);
+      // console.log(`✅ STOMP CONNECTED for ${nickname}`);
       
       // 구독
       const subscribeFrame = `SUBSCRIBE\nid:sub-0\ndestination:/topic/room/${roomId}\n\n\0`;
@@ -75,7 +78,7 @@ function connectWebSocketAndChat(context, events, done) {
       })}\0`;
       ws.send(joinFrame);
       
-      console.log(`🚪 Joined room ${roomId} for ${nickname}`);
+      // console.log(`🚪 Joined room ${roomId} for ${nickname}`);
     }
   });
   
@@ -95,13 +98,13 @@ function connectWebSocketWithParticipation(context, events, done) {
   const nickname = context.vars.nickname;
   const roomId = context.vars.roomId;
   const cookies = context.vars.cookies;
-  
+
   if (!roomId) {
     console.error(`❌ No roomId for ${nickname}`);
     return done();
   }
-  
-  const wsUrl = `ws://backend:8080/ws/websocket`;
+
+  const wsUrl = `ws://${BACKEND_HOST}/ws/websocket`;
   const wsOptions = {};
   
   // 쿠키가 있으면 헤더에 포함
@@ -115,7 +118,7 @@ function connectWebSocketWithParticipation(context, events, done) {
   context.vars.ws = ws;
   
   ws.on('open', () => {
-    console.log(`🔌 WebSocket connected for participant ${nickname}`);
+    // console.log(`🔌 WebSocket connected for participant ${nickname}`);
     
     // STOMP CONNECT
     const connectFrame = `CONNECT\naccept-version:1.1,1.0\nheart-beat:10000,10000\n\n\0`;
@@ -126,7 +129,7 @@ function connectWebSocketWithParticipation(context, events, done) {
     const message = data.toString();
     
     if (message.startsWith('CONNECTED')) {
-      console.log(`✅ STOMP CONNECTED for participant ${nickname}`);
+      // console.log(`✅ STOMP CONNECTED for participant ${nickname}`);
       
       // 구독
       const subscribeFrame = `SUBSCRIBE\nid:sub-0\ndestination:/topic/room/${roomId}\n\n\0`;
@@ -143,7 +146,7 @@ function connectWebSocketWithParticipation(context, events, done) {
       })}\0`;
       ws.send(joinFrame);
       
-      console.log(`🚪 Joined room ${roomId} for participant ${nickname}`);
+      // console.log(`🚪 Joined room ${roomId} for participant ${nickname}`);
       
       // 2-3분 후에 채팅 시작 스케줄링
       setTimeout(() => {
@@ -164,13 +167,13 @@ function connectWebSocketWithBuying(context, events, done) {
   const nickname = context.vars.nickname;
   const roomId = context.vars.roomId;
   const cookies = context.vars.cookies;
-  
+
   if (!roomId) {
     console.error(`❌ No roomId for ${nickname}`);
     return done();
   }
-  
-  const wsUrl = `ws://backend:8080/ws/websocket`;
+
+  const wsUrl = `ws://${BACKEND_HOST}/ws/websocket`;
   const wsOptions = {};
   
   // 쿠키가 있으면 헤더에 포함
@@ -184,7 +187,7 @@ function connectWebSocketWithBuying(context, events, done) {
   context.vars.ws = ws;
   
   ws.on('open', () => {
-    console.log(`🔌 WebSocket connected for buyer ${nickname}`);
+    // console.log(`🔌 WebSocket connected for buyer ${nickname}`);
     
     // STOMP CONNECT
     const connectFrame = `CONNECT\naccept-version:1.1,1.0\nheart-beat:10000,10000\n\n\0`;
@@ -195,7 +198,7 @@ function connectWebSocketWithBuying(context, events, done) {
     const message = data.toString();
     
     if (message.startsWith('CONNECTED')) {
-      console.log(`✅ STOMP CONNECTED for buyer ${nickname}`);
+      // console.log(`✅ STOMP CONNECTED for buyer ${nickname}`);
       
       // 구독
       const subscribeFrame = `SUBSCRIBE\nid:sub-0\ndestination:/topic/room/${roomId}\n\n\0`;
@@ -212,7 +215,7 @@ function connectWebSocketWithBuying(context, events, done) {
       })}\0`;
       ws.send(joinFrame);
       
-      console.log(`🚪 Joined room ${roomId} for buyer ${nickname}`);
+      // console.log(`🚪 Joined room ${roomId} for buyer ${nickname}`);
       
       // 4분 30초 후에 구매 관련 채팅 시작
       setTimeout(() => {
@@ -254,7 +257,7 @@ function startChatting(ws, nickname, roomId) {
     })}\0`;
     
     ws.send(messageFrame);
-    console.log(`💬 Chat message sent by ${nickname}: ${randomMessage}`);
+    // console.log(`💬 Chat message sent by ${nickname}: ${randomMessage}`);
     chatCount--;
   }, 2000 + Math.random() * 3000); // 2-5초 간격
 }
@@ -285,7 +288,7 @@ function startBuyerChatting(ws, nickname, roomId) {
     })}\0`;
     
     ws.send(messageFrame);
-    console.log(`🛒 Buyer message sent by ${nickname}: ${randomMessage}`);
+    // console.log(`🛒 Buyer message sent by ${nickname}: ${randomMessage}`);
     chatCount--;
   }, 2000 + Math.random() * 3000); // 2-5초 간격
 }
@@ -296,7 +299,7 @@ function saveCookie(requestParams, response, context, ee, next) {
   if (response.headers && response.headers['set-cookie']) {
     // Set-Cookie 헤더가 배열로 올 수 있으므로 join으로 합치기
     context.vars.cookies = response.headers['set-cookie'].join('; ');
-    console.log(`🍪 Cookie saved for ${context.vars.nickname}: ${context.vars.cookies}`);
+    // console.log(`🍪 Cookie saved for ${context.vars.nickname}: ${context.vars.cookies}`);
   }
   return next();
 }
@@ -306,6 +309,5 @@ module.exports = {
   connectWebSocketAndChat,
   connectWebSocketWithParticipation,
   connectWebSocketWithBuying,
-  randomBetween,
   saveCookie
 };
