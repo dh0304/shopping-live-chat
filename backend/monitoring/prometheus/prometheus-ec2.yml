@@ -1,17 +1,17 @@
 global:
-  scrape_interval: 15s
+  scrape_interval: 30s
 
 scrape_configs:
   - job_name: 'spring-boot-app-ec2'
     static_configs:
-      - targets: ['${APP_SERVER_HOST}:8080']  # EC2 App 서버 IP로 교체
+      - targets: ['192.168.0.40:8080']  # EC2 App 서버 IP로 교체
     metrics_path: '/actuator/prometheus'
-    scrape_interval: 5s
+    scrape_interval: 30s
     
   - job_name: 'node-exporter'
     static_configs:
       - targets: ['node-exporter:9100']
-    scrape_interval: 15s
+    scrape_interval: 30s
     
   - job_name: 'prometheus'
     static_configs:
