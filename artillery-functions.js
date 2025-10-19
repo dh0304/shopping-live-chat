@@ -3,7 +3,7 @@ const WebSocket = require('ws');
 const crypto = require('crypto');
 
 // 백엔드 서버 주소 설정 (필요시 여기만 수정)
-const BACKEND_HOST = '192.168.0.46:8080';
+const BACKEND_HOST = '192.168.0.40:8080';
 
 // 사용자 데이터 설정 (VU별 고유 정보)
 function setUserData(context, events, done) {
