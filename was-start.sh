@@ -38,7 +38,9 @@ for i in {1..60}; do
         break
     fi
     echo "백엔드 서비스 대기 중... ($i/60)"
-    sleep 3
+    echo "📋 최근 백엔드 로그:"
+    docker compose -f docker-compose.was-ec2.yml logs --tail=20 backend
+    sleep 5
 done
 
 # DataInitializer 완료 확인
